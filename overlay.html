@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCS Military Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            color: #e8e8e8;
+            font-size: 8px;
+        }
+
+        .overlay-container {
+            position: fixed;
+            left: 10px;
+            bottom: 10px;
+            padding: 10px;
+            width: 200px;
+        }
+
+        /* Aircraft Section */
+        .aircraft-section {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+        }
+
+        .aircraft-icon {
+            width: 200px;
+            height: 300px;
+            background: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+        }
+
+        .aircraft-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .aircraft-icon-placeholder {
+            font-size: 11px;
+            color: #a0b0c0;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(45, 55, 70, 0.9), rgba(35, 45, 60, 0.9));
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .aircraft-name {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Weapons Sections */
+        .weapons-section {
+            margin-bottom: 20px;
+        }
+
+        .weapons-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .aa-title {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 127, 0.9));
+            color: #ffffff;
+        }
+
+        .ag-title {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
+            color: #ffffff;
+        }
+
+        .weapon-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            margin: 4px 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .weapon-item:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .weapon-left {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .weapon-icon {
+            width: 28px;
+            height: 18px;
+            background: linear-gradient(135deg, rgba(100, 120, 150, 0.8), rgba(80, 100, 130, 0.8));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #ffffff;
+            margin-right: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .weapon-name {
+            color: #ffffff;
+            font-size: 13px;
+            flex: 1;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .weapon-count {
+            color: #fbbf24;
+            font-weight: 700;
+            font-size: 13px;
+            margin-left: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .weapon-station {
+            color: #d1d5db;
+            font-size: 11px;
+            margin-right: 10px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Fuel Section */
+        .fuel-section {
+            padding-top: 20px;
+        }
+
+        .fuel-title {
+            color: #60a5fa;
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .fuel-bar-container {
+            background: linear-gradient(135deg, rgba(30, 35, 45, 0.9), rgba(25, 30, 40, 0.9));
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .fuel-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 12px;
+            transition: width 0.4s ease;
+            position: relative;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .fuel-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 2;
+        }
+
+        .fuel-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #d1d5db;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Status */
+        .status {
+            text-align: center;
+            color: #ef4444;
+            margin: 20px 0;
+            font-size: 14px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 127, 0.1));
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .connected {
+            color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+        }
+
+        /* Empty state */
+        .empty-weapons {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            padding: 16px;
+            font-style: italic;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay-container">
+        <div class="status" id="status">Connecting to DCS...</div>
+        
+        <div id="aircraft-info" style="display: none;">
+            <!-- Aircraft Section -->
+            <div class="aircraft-section">
+                <div class="aircraft-icon" id="aircraft-icon">
+                    <div class="aircraft-icon-placeholder">AIRCRAFT</div>
+                </div>
+                <div class="aircraft-name" id="aircraft-name">Unknown Aircraft</div>
+            </div>
+
+            <!-- Air-to-Air Weapons -->
+            <div class="weapons-section">
+                <div class="weapons-title aa-title">Air-to-Air</div>
+                <div id="aa-weapons-list" class="weapons-list">
+                    <div class="empty-weapons">No A/A weapons loaded</div>
+                </div>
+            </div>
+
+            <!-- Air-to-Ground Weapons -->
+            <div class="weapons-section">
+                <div class="weapons-title ag-title">Air-to-Ground</div>
+                <div id="ag-weapons-list" class="weapons-list">
+                    <div class="empty-weapons">No A/G weapons loaded</div>
+                </div>
+            </div>
+
+            <!-- Fuel Section -->
+            <div class="fuel-section">
+                <div class="fuel-title">Fuel Status</div>
+                <div class="fuel-bar-container">
+                    <div class="fuel-fill" id="fuel-bar"></div>
+                    <div class="fuel-text" id="fuel-text">0%</div>
+                </div>
+                <div class="fuel-details">
+                    <span id="fuel-amount">0 kg</span>
+                    <span id="fuel-time">--:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let websocket;
+        let reconnectInterval = 2000;
+        let maxReconnectAttempts = -1;
+        let reconnectAttempts = 0;
+        let aircraftMappings = {}; // Store the loaded mappings
+
+        const statusElement = document.getElementById('status');
+        const aircraftInfo = document.getElementById('aircraft-info');
+        const aircraftName = document.getElementById('aircraft-name');
+        const fuelBar = document.getElementById('fuel-bar');
+        const fuelText = document.getElementById('fuel-text');
+        const fuelAmount = document.getElementById('fuel-amount');
+        const fuelTime = document.getElementById('fuel-time');
+        const aaWeaponsList = document.getElementById('aa-weapons-list');
+        const agWeaponsList = document.getElementById('ag-weapons-list');
+
+        // Load aircraft mappings on page load
+        async function loadAircraftMappings() {
+            try {
+                const response = await fetch('mappings/aircraft.json');
+                if (response.ok) {
+                    aircraftMappings = await response.json();
+                    console.log('Aircraft mappings loaded:', aircraftMappings);
+                } else {
+                    console.warn('Could not load aircraft mappings, using fallback');
+                    // Fallback mappings in case the JSON file can't be loaded
+                    aircraftMappings = {
+                        "F/A-18C_hornet": "f18c_hornet.png",
+                        "F-16C_50": "f16c_viper.png",
+                        "A-10C": "a10c_warthog.png",
+                        "A-10C_2": "a10c_ii_warthog.png",
+                        "default": "default_aircraft.png"
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading aircraft mappings:', error);
+                // Use minimal fallback
+                aircraftMappings = {
+                    "default": "default_aircraft.png"
+                };
+            }
+        }
+
+        function connect() {
+            try {
+                websocket = new WebSocket('ws://localhost:8080');
+                
+                websocket.onopen = function() {
+                    statusElement.style.display = 'none';
+                    reconnectAttempts = 0;
+                };
+
+                websocket.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        updateDisplay(data);
+                    } catch (e) {
+                        console.error('Failed to parse data:', e);
+                    }
+                };
+
+                websocket.onclose = function() {
+                    statusElement.textContent = 'Connection lost. Reconnecting...';
+                    statusElement.classList.remove('connected');
+                    aircraftInfo.style.display = 'none';
+                    
+                    if (maxReconnectAttempts === -1 || reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(connect, reconnectInterval);
+                        reconnectAttempts++;
+                    }
+                };
+
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+
+            } catch (e) {
+                console.error('Failed to connect:', e);
+                setTimeout(connect, reconnectInterval);
+            }
+        }
+
+        function updateDisplay(data) {
+            if (!data.aircraft || data.aircraft === "NO_AIRCRAFT") return;
+
+            aircraftInfo.style.display = 'block';
+            aircraftName.textContent = data.aircraft;
+
+            // Update aircraft icon
+            updateAircraftIcon(data.aircraft);
+
+            // Update fuel with proper calculation - data.fuel.total appears to be a fraction (0-1)
+            if (data.fuel) {
+                const fuelFraction = data.fuel.total || 0;
+                const fuelPercent = Math.round(fuelFraction * 100);
+                
+                fuelBar.style.width = fuelPercent + '%';
+                fuelText.textContent = fuelPercent + '%';
+                
+                // Calculate approximate fuel weight based on aircraft type and percentage
+                const maxFuel = getMaxFuelForAircraft(data.aircraft);
+                const currentFuelKg = Math.round(maxFuel * fuelFraction);
+                fuelAmount.textContent = currentFuelKg + ' kg';
+                
+                // Estimate fuel time (very rough)
+                const estimatedTime = currentFuelKg > 0 ? Math.round(currentFuelKg / 8) : 0; // kg per minute rough estimate
+                fuelTime.textContent = formatTime(estimatedTime);
+            }
+
+            // Aggregate and update Air-to-Air weapons
+            const aaWeapons = aggregateWeapons(data.weapons.air_to_air || []);
+            updateWeaponsList(aaWeapons, aaWeaponsList, "No A/A weapons loaded");
+            
+            // Aggregate and update Air-to-Ground weapons  
+            const agWeapons = aggregateWeapons(data.weapons.air_to_ground || []);
+            updateWeaponsList(agWeapons, agWeaponsList, "No A/G weapons loaded");
+        }
+
+        function updateAircraftIcon(aircraftName) {
+            const aircraftIcon = document.getElementById('aircraft-icon');
+            const imagePath = getAircraftImagePath(aircraftName);
+            
+            // Try to load aircraft image
+            const img = new Image();
+            img.onload = function() {
+                aircraftIcon.innerHTML = `<img src="${imagePath}" alt="${aircraftName}">`;
+            };
+            img.onerror = function() {
+                // Fallback to placeholder
+                aircraftIcon.innerHTML = '<div class="aircraft-icon-placeholder">AIRCRAFT</div>';
+            };
+            img.src = imagePath;
+        }
+
+        function getAircraftImagePath(aircraftName) {
+            // Use the loaded JSON mappings
+            const imageFile = aircraftMappings[aircraftName] || aircraftMappings['default'] || 'default_aircraft.png';
+            return `images/aircraft/${imageFile}`;
+        }
+
+        function aggregateWeapons(weaponsList) {
+            const weaponMap = new Map();
+            
+            weaponsList.forEach(weapon => {
+                if (weapon.name && weapon.name !== 'UNKNOWN_0,0,0,0' && weapon.count > 0) {
+                    const key = weapon.name;
+                    if (weaponMap.has(key)) {
+                        // Add to existing weapon count
+                        const existing = weaponMap.get(key);
+                        existing.total += weapon.count;
+                        existing.remaining += weapon.count; // Assume all are remaining for now
+                    } else {
+                        // Create new weapon entry
+                        weaponMap.set(key, {
+                            name: weapon.name,
+                            total: weapon.count,
+                            remaining: weapon.count // For now, assume all are remaining
+                        });
+                    }
+                }
+            });
+            
+            return Array.from(weaponMap.values());
+        }
+
+        function updateWeaponsList(weapons, listElement, emptyMessage) {
+            if (weapons && weapons.length > 0) {
+                let weaponsHTML = '';
+                
+                weapons.forEach(weapon => {
+                    weaponsHTML += `
+                        <div class="weapon-item">
+                            <div class="weapon-name">${weapon.name}</div>
+                            <div class="weapon-count">×${weapon.total}</div>
+                        </div>
+                    `;
+                });
+                
+                listElement.innerHTML = weaponsHTML;
+            } else {
+                listElement.innerHTML = `<div class="empty-weapons">${emptyMessage}</div>`;
+            }
+        }
+
+        function getMaxFuelForAircraft(aircraft) {
+            const fuelCapacity = {
+                'F-16C_50': 3200,
+                'F/A-18C_hornet': 4900,
+                'A-10C': 5029,
+                'A-10C_2': 5029,
+                'AV8BNA': 3519,
+                'F-14A-135-GR': 7348,
+                'F-14A-95-GR': 7348,
+                'F-14B': 7348,
+                'M-2000C': 3165,
+                'AJS37': 2400,
+                'SA342M': 417,
+                'SA342L': 417,
+                'SA342Mistral': 417,
+                'Mi-8MT': 1870,
+                'Mi-24P': 1851,
+                'Ka-50': 1450,
+                'Ka-50_3': 1450,
+                'AH-64D_BLK_II': 1157,
+                'OH-58D': 566,
+                'CH-47F': 3914,
+                'MiG-21Bis': 2280,
+                'MiG-29A': 3376,
+                'MiG-29S': 3376,
+                'MiG-29G': 3376,
+                'MiG-29': 3376,
+                'Su-27': 5270,
+                'Su-33': 5270
+            };
+            
+            return fuelCapacity[aircraft] || 5000;
+        }
+
+        function formatTime(minutes) {
+            if (minutes <= 0) return '--:--';
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return hours > 0 ? `${hours}:${mins.toString().padStart(2, '0')}` : `${mins}:00`;
+        }
+
+        // Initialize the application
+        async function initialize() {
+            await loadAircraftMappings();
+            connect();
+        }
+
+        // Start the application
+        initialize();
+    </script>
+</body>
+</html>
