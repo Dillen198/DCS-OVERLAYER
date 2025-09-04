@@ -1,5 +1,5 @@
--- DCS World Export Script - Using correct DCS API from wiki
--- Replace your entire Export.lua with this
+-- DCS World Export Script with RWR Support
+-- Using correct DCS API from wiki documentation
 
 local lfs = require('lfs')
 
@@ -10,7 +10,7 @@ local dataFile = nil
 local debugCounter = 0
 
 function LuaExportStart()
-    log.write('DCS-OVERLAY', log.INFO, 'LuaExportStart() called')
+    log.write('DCS-OVERLAY', log.INFO, 'LuaExportStart() called with RWR support')
     
     -- Initialize data file for overlay
     pcall(function()
@@ -49,7 +49,7 @@ function LuaExportAfterNextFrame()
                 -- Get payload info
                 local payloadInfo = LoGetPayloadInfo()
                 
-                -- Get fuel data from engine info (correct API)
+                -- Get fuel data from engine info
                 local engineInfo = LoGetEngineInfo()
                 local fuelData = {
                     internal = 0,
@@ -61,7 +61,70 @@ function LuaExportAfterNextFrame()
                     fuelData.internal = engineInfo.fuel_internal or 0
                     fuelData.external = engineInfo.fuel_external or 0
                     fuelData.total = (engineInfo.fuel_internal or 0) + (engineInfo.fuel_external or 0)
-                    log.write('DCS-OVERLAY', log.INFO, 'Fuel data - Internal: ' .. fuelData.internal .. ', External: ' .. fuelData.external .. ', Total: ' .. fuelData.total)
+                    log.write('DCS-OVERLAY', log.INFO, 'Fuel: ' .. fuelData.total)
+                end
+                
+                -- Get RWR/TWS data
+                local rwrData = {
+                    mode = 0,
+                    emitters = {}
+                }
+                
+                local twsInfo = LoGetTWSInfo()
+                if twsInfo then
+                    rwrData.mode = twsInfo.Mode or 0
+                    
+                    if twsInfo.Emitters then
+                        for i, emitter in pairs(twsInfo.Emitters) do
+                            -- Process each emitter
+                            local threatName = "UNK"
+                            
+                            -- Try to identify the threat
+                            if emitter.Type then
+                                local level1 = emitter.Type.level1 or 0
+                                local level2 = emitter.Type.level2 or 0
+                                local level3 = emitter.Type.level3 or 0
+                                local level4 = emitter.Type.level4 or 0
+                                
+                                -- Try to get name from type
+                                threatName = LoGetNameByType(level1, level2, level3, level4) or "UNK"
+                                
+                                -- Fallback to common threat identifications
+                                if threatName == "UNK" then
+                                    -- Air Defense systems
+                                    if level1 == 16 and level2 == 2 then
+                                        if level3 == 7 then threatName = "SA-11"
+                                        elseif level3 == 2 then threatName = "SA-6"
+                                        elseif level3 == 10 then threatName = "SA-10"
+                                        elseif level3 == 12 then threatName = "SA-15"
+                                        elseif level3 == 13 then threatName = "SA-19"
+                                        end
+                                    -- Aircraft
+                                    elseif level1 == 1 then
+                                        if level2 == 1 then -- Fighter
+                                            if level3 == 7 then threatName = "F-16"
+                                            elseif level3 == 6 then threatName = "F-15"
+                                            elseif level3 == 5 then threatName = "F-18"
+                                            elseif level3 == 1 then threatName = "MIG-29"
+                                            elseif level3 == 2 then threatName = "SU-27"
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            table.insert(rwrData.emitters, {
+                                id = emitter.ID or i,
+                                name = threatName,
+                                power = emitter.Power or 0,
+                                azimuth = emitter.Azimuth or 0,
+                                priority = emitter.Priority or 0,
+                                signal = emitter.SignalType or "scan"
+                            })
+                            
+                            log.write('DCS-OVERLAY', log.INFO, 'RWR Threat: ' .. threatName .. ' Signal: ' .. (emitter.SignalType or "scan"))
+                        end
+                    end
                 end
                 
                 -- Create data packet
@@ -73,29 +136,28 @@ function LuaExportAfterNextFrame()
                         air_to_air = {},
                         air_to_ground = {},
                         other = {}
-                    }
+                    },
+                    rwr = rwrData
                 }
                 
-                -- Extract weapons data with categorization
+                -- Extract weapons data
                 local weaponCount = 0
                 if payloadInfo and payloadInfo.Stations then
                     for stationId, station in pairs(payloadInfo.Stations) do
                         if station.weapon then
                             weaponCount = weaponCount + 1
                             
-                            -- Get weapon name using correct API
+                            -- Get weapon name
                             local weaponName = LoGetNameByType(station.weapon.level1, station.weapon.level2, station.weapon.level3, station.weapon.level4)
                             if not weaponName then
                                 weaponName = "Unknown Weapon"
                             end
                             
-                            log.write('DCS-OVERLAY', log.INFO, 'Weapon - Station: ' .. stationId .. ', Name: ' .. weaponName .. ', Levels: ' .. station.weapon.level1 .. ',' .. station.weapon.level2 .. ',' .. station.weapon.level3 .. ',' .. station.weapon.level4)
-                            
-                            -- Categorize weapons based on weapon name patterns (more reliable than level1)
+                            -- Categorize weapons
                             local isAirToAir = false
                             local isAirToGround = false
                             
-                            -- Air-to-Air weapon patterns
+                            -- Air-to-Air patterns
                             if string.find(string.upper(weaponName), "AIM%-120") or 
                                string.find(string.upper(weaponName), "AIM%-9") or
                                string.find(string.upper(weaponName), "AIM%-7") or
@@ -104,37 +166,14 @@ function LuaExportAfterNextFrame()
                                string.find(string.upper(weaponName), "R%-73") or
                                string.find(string.upper(weaponName), "R%-27") or
                                string.find(string.upper(weaponName), "R%-77") or
-                               string.find(string.upper(weaponName), "PL%-12") or
-                               string.find(string.upper(weaponName), "PL%-15") or
-                               string.find(string.upper(weaponName), "PL%-8") or
-                               string.find(string.upper(weaponName), "PL%-5") or
-                               string.find(string.upper(weaponName), "SD%-10") or
-                               string.find(string.upper(weaponName), "MICA") or
-                               string.find(string.upper(weaponName), "MAGIC") or
-                               string.find(string.upper(weaponName), "METEOR") or
                                string.find(string.upper(weaponName), "CANNON") then
                                 isAirToAir = true
-                            -- Air-to-Ground weapon patterns  
+                            -- Air-to-Ground patterns
                             elseif string.find(string.upper(weaponName), "MK%-") or
                                    string.find(string.upper(weaponName), "GBU%-") or
                                    string.find(string.upper(weaponName), "AGM%-") or
-                                   string.find(string.upper(weaponName), "CBU%-") or
-                                   string.find(string.upper(weaponName), "MAVERICK") or
-                                   string.find(string.upper(weaponName), "HELLFIRE") or
-                                   string.find(string.upper(weaponName), "HARM") or
-                                   string.find(string.upper(weaponName), "JDAM") or
-                                   string.find(string.upper(weaponName), "PAVEWAY") then
+                                   string.find(string.upper(weaponName), "CBU%-") then
                                 isAirToGround = true
-                            -- Pods and support equipment
-                            elseif string.find(string.upper(weaponName), "POD") or
-                                   string.find(string.upper(weaponName), "LITENING") or
-                                   string.find(string.upper(weaponName), "SNIPER") or
-                                   string.find(string.upper(weaponName), "HTS") or
-                                   string.find(string.upper(weaponName), "ALQ") or
-                                   string.find(string.upper(weaponName), "TANK") then
-                                -- Skip pods and support equipment
-                            else
-                                -- Unknown weapons go to other category
                             end
                             
                             local weapon = {
@@ -155,7 +194,7 @@ function LuaExportAfterNextFrame()
                     end
                 end
                 
-                -- Add cannon info if available
+                -- Add cannon info
                 if payloadInfo and payloadInfo.Cannon then
                     table.insert(data.weapons.air_to_air, {
                         station = 0,
@@ -165,7 +204,7 @@ function LuaExportAfterNextFrame()
                     })
                 end
                 
-                -- Write JSON data to file
+                -- Write JSON data
                 local json = encodeJSON(data)
                 
                 dataFile:close()
@@ -174,14 +213,14 @@ function LuaExportAfterNextFrame()
                 if dataFile then
                     dataFile:write(json)
                     dataFile:flush()
-                    log.write('DCS-OVERLAY', log.INFO, 'SUCCESS: Data exported for ' .. selfData.Name .. ' with ' .. weaponCount .. ' weapons')
+                    log.write('DCS-OVERLAY', log.INFO, 'Data exported with ' .. #rwrData.emitters .. ' RWR threats')
                 end
             end
         end
     end)
     
     if not success then
-        log.write('DCS-OVERLAY', log.ERROR, 'Error in export function: ' .. tostring(error_msg))
+        log.write('DCS-OVERLAY', log.ERROR, 'Error: ' .. tostring(error_msg))
     end
 end
 
@@ -198,7 +237,7 @@ function LuaExportStop()
     end)
 end
 
--- Simple JSON encoder
+-- Enhanced JSON encoder with RWR support
 function encodeJSON(obj)
     if type(obj) == "table" then
         local items = {}
@@ -235,4 +274,4 @@ function encodeJSON(obj)
     end
 end
 
-log.write('DCS-OVERLAY', log.INFO, 'Corrected Export.lua loaded with proper DCS API')
+log.write('DCS-OVERLAY', log.INFO, 'Export.lua with RWR support loaded')
