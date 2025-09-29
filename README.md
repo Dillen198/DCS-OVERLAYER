@@ -241,7 +241,7 @@ Built for the DCS World streaming and content creation community using the offic
 
 ## Changelog
 
-### v1.0.0 (January 2025)
+### v1.0.0 (September 2025)
 - Initial public release
 - Automatic installer with DCS detection
 - Real-time weapons and fuel monitoring
