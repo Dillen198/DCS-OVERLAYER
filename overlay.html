@@ -23,141 +23,6 @@
             width: 200px;
         }
 
-        /* RWR Container - Top Right */
-        .rwr-container {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 280px;
-            height: 280px;
-            background: linear-gradient(135deg, rgba(10, 15, 25, 0.95), rgba(5, 10, 20, 0.95));
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        /* RWR Title */
-        .rwr-title {
-            color: #fbbf24;
-            font-weight: 700;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        /* RWR Display */
-        .rwr-display {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle at center, rgba(0, 30, 0, 0.9), rgba(0, 15, 0, 0.95));
-            border: 2px solid #00ff00;
-            border-radius: 50%;
-            box-shadow: inset 0 0 30px rgba(0, 255, 0, 0.2), 0 0 20px rgba(0, 255, 0, 0.3);
-        }
-
-        /* RWR Grid Lines */
-        .rwr-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .rwr-circle {
-            position: absolute;
-            border: 1px solid rgba(0, 255, 0, 0.2);
-            border-radius: 50%;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .rwr-circle-inner {
-            width: 80px;
-            height: 80px;
-        }
-
-        .rwr-circle-middle {
-            width: 160px;
-            height: 160px;
-        }
-
-        .rwr-line {
-            position: absolute;
-            background: rgba(0, 255, 0, 0.3);
-            left: 50%;
-            top: 50%;
-            transform-origin: center;
-        }
-
-        .rwr-line-vertical {
-            width: 1px;
-            height: 100%;
-            transform: translate(-50%, -50%);
-        }
-
-        .rwr-line-horizontal {
-            width: 100%;
-            height: 1px;
-            transform: translate(-50%, -50%);
-        }
-
-        /* RWR Center Aircraft */
-        .rwr-center {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 16px solid #00ff00;
-            filter: drop-shadow(0 0 4px rgba(0, 255, 0, 0.8));
-        }
-
-        /* RWR Threat */
-        .rwr-threat {
-            position: absolute;
-            font-size: 14px;
-            font-weight: 700;
-            color: #ff0000;
-            text-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
-            padding: 2px 6px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 4px;
-            border: 1px solid #ff0000;
-            transform: translate(-50%, -50%);
-            animation: threatPulse 1s infinite;
-        }
-
-        .rwr-threat.missile {
-            color: #ff0000;
-            border-color: #ff0000;
-            animation: missileBlink 0.3s infinite;
-        }
-
-        .rwr-threat.tracking {
-            color: #ffa500;
-            border-color: #ffa500;
-            text-shadow: 0 0 8px rgba(255, 165, 0, 0.8);
-            animation: threatPulse 0.7s infinite;
-        }
-
-        .rwr-threat.search {
-            color: #ffff00;
-            border-color: #ffff00;
-            text-shadow: 0 0 8px rgba(255, 255, 0, 0.8);
-            animation: none;
-        }
-
         @keyframes threatPulse {
             0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
@@ -166,39 +31,6 @@
         @keyframes missileBlink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
-        }
-
-        /* RWR Direction Indicators */
-        .rwr-direction {
-            position: absolute;
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(0, 255, 0, 0.6);
-            text-shadow: 0 0 4px rgba(0, 255, 0, 0.4);
-        }
-
-        .rwr-north {
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .rwr-south {
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .rwr-east {
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .rwr-west {
-            left: 5px;
-            top: 50%;
-            transform: translateY(-50%);
         }
 
         /* Aircraft Section */
@@ -440,32 +272,6 @@
         </div>
     </div>
 
-    <!-- Right Side: RWR Display -->
-    <div class="rwr-container" id="rwr-container" style="display: none;">
-        <div class="rwr-title">RWR - THREATS</div>
-        <div class="rwr-display">
-            <!-- Grid -->
-            <div class="rwr-grid">
-                <div class="rwr-circle rwr-circle-inner"></div>
-                <div class="rwr-circle rwr-circle-middle"></div>
-                <div class="rwr-line rwr-line-vertical"></div>
-                <div class="rwr-line rwr-line-horizontal"></div>
-            </div>
-            
-            <!-- Direction Indicators -->
-            <div class="rwr-direction rwr-north">N</div>
-            <div class="rwr-direction rwr-south">S</div>
-            <div class="rwr-direction rwr-east">E</div>
-            <div class="rwr-direction rwr-west">W</div>
-            
-            <!-- Center Aircraft Icon -->
-            <div class="rwr-center"></div>
-            
-            <!-- Threats Container -->
-            <div id="rwr-threats"></div>
-        </div>
-    </div>
-
     <script>
         let websocket;
         let reconnectInterval = 2000;
@@ -482,11 +288,6 @@
         const fuelTime = document.getElementById('fuel-time');
         const aaWeaponsList = document.getElementById('aa-weapons-list');
         const agWeaponsList = document.getElementById('ag-weapons-list');
-        const rwrContainer = document.getElementById('rwr-container');
-        const rwrThreats = document.getElementById('rwr-threats');
-
-        // Simulated RWR threats for demonstration
-        let simulatedThreats = [];
 
         // Load aircraft mappings on page load
         async function loadAircraftMappings() {
@@ -535,7 +336,6 @@
                     statusElement.textContent = 'Connection lost. Reconnecting...';
                     statusElement.classList.remove('connected');
                     aircraftInfo.style.display = 'none';
-                    rwrContainer.style.display = 'none';
                     
                     if (maxReconnectAttempts === -1 || reconnectAttempts < maxReconnectAttempts) {
                         setTimeout(connect, reconnectInterval);
@@ -557,7 +357,6 @@
             if (!data.aircraft || data.aircraft === "NO_AIRCRAFT") return;
 
             aircraftInfo.style.display = 'block';
-            rwrContainer.style.display = 'block';
             aircraftName.textContent = data.aircraft;
 
             // Update aircraft icon
@@ -585,75 +384,6 @@
             
             const agWeapons = aggregateWeapons(data.weapons.air_to_ground || []);
             updateWeaponsList(agWeapons, agWeaponsList, "No A/G weapons loaded");
-
-            // Update RWR (simulated for now)
-            updateRWR(data);
-        }
-
-        function updateRWR(data) {
-            // Process real RWR data from DCS
-            if (data.rwr && data.rwr.emitters && data.rwr.emitters.length > 0) {
-                simulatedThreats = [];
-                
-                data.rwr.emitters.forEach(emitter => {
-                    // Convert azimuth to degrees (DCS provides in radians)
-                    const angleDegrees = (emitter.azimuth * 180 / Math.PI) || 0;
-                    
-                    // Map signal type to threat level
-                    let threatType = 'search';
-                    if (emitter.signal === 'missile_radio_guided' || emitter.signal === 'missile_active') {
-                        threatType = 'missile';
-                    } else if (emitter.signal === 'lock' || emitter.signal === 'track_while_scan') {
-                        threatType = 'tracking';
-                    }
-                    
-                    // Calculate distance based on signal power (0-1 mapped to display distance)
-                    const distance = 30 + (1 - (emitter.power || 0.5)) * 90;
-                    
-                    simulatedThreats.push({
-                        id: emitter.id,
-                        name: emitter.name || 'UNK',
-                        type: threatType,
-                        angle: angleDegrees,
-                        distance: distance,
-                        priority: emitter.priority || 0
-                    });
-                });
-                
-                // Sort by priority
-                simulatedThreats.sort((a, b) => b.priority - a.priority);
-                
-                // Limit to top 10 threats
-                simulatedThreats = simulatedThreats.slice(0, 10);
-            }
-            
-            // Render threats on RWR
-            renderRWRThreats();
-        }
-
-        function renderRWRThreats() {
-            rwrThreats.innerHTML = '';
-
-            simulatedThreats.forEach(threat => {
-                const threatElement = document.createElement('div');
-                threatElement.className = `rwr-threat ${threat.type}`;
-                threatElement.textContent = threat.name;
-
-                // Calculate position based on angle and distance
-                const radians = (threat.angle - 90) * Math.PI / 180;
-                const x = 125 + Math.cos(radians) * threat.distance;
-                const y = 125 + Math.sin(radians) * threat.distance;
-
-                threatElement.style.left = x + 'px';
-                threatElement.style.top = y + 'px';
-
-                rwrThreats.appendChild(threatElement);
-            });
-
-            // Remove old threats
-            simulatedThreats = simulatedThreats.filter(threat => 
-                Date.now() - threat.id < 10000 // Keep threats for 10 seconds
-            );
         }
 
         function updateAircraftIcon(aircraftName) {
@@ -750,12 +480,6 @@
         async function initialize() {
             await loadAircraftMappings();
             connect();
-            
-            // Update RWR display continuously
-            setInterval(() => {
-                // Always update RWR to show test threats
-                updateRWR({});
-            }, 500); // Update every 500ms for smoother threat display
         }
 
         // Start the application
