@@ -1,41 +1,36 @@
 # DCS World Overlay
 
-A real-time overlay for DCS World that displays aircraft weapons, fuel status.
+A real-time overlay for DCS World that displays aircraft weapons, fuel status, and flight information.
 
 ## Features
 
 - **Aircraft Information**: Shows current aircraft with icon
 - **Weapons Display**: Air-to-Air and Air-to-Ground weapons with counts
 - **Fuel Status**: Visual fuel bar with remaining fuel and estimated time
+- **Automatic Installation**: Installer handles Export.lua setup automatically
 
 ## Quick Start (For Users)
 
-### Download
+### Download & Install
 
 1. Go to [Releases](../../releases)
-2. Download the latest `DCS-Overlay-vX.X.X-Windows-x64.zip`
-3. Extract to any folder
+2. Download `DCS-Overlay-Setup-v1.0.0.exe`
+3. Run the installer
+4. Follow the setup wizard (it will auto-detect your DCS installation)
+5. Done!
 
-### Installation
+The installer will:
+- Detect your DCS Saved Games folder automatically
+- Install Export.lua (preserves existing exports like SRS, TacView)
+- Create Start Menu and Desktop shortcuts
+- Set up everything needed to run
 
-1. **Install Export Script**
-   
-   Copy `Export.lua` to your DCS Scripts folder:
-   ```
-   C:\Users\[YourUsername]\Saved Games\DCS\Scripts\Export.lua
-   ```
-   
-   **Important:** If `Export.lua` already exists, append the content instead of replacing.
+### Running the Overlay
 
-2. **Run the Overlay**
-   
-   Double-click `DCS-Overlay.exe`
-   
-   Your browser will automatically open to `http://localhost:3000`
-
-3. **Launch DCS World**
-   
-   Start DCS and enter any mission. The overlay will automatically connect and display your aircraft data.
+1. **Launch DCS Overlay** from Start Menu or Desktop
+2. Browser opens automatically with the overlay
+3. **Start DCS World** and enter any mission
+4. Overlay updates automatically with your aircraft data
 
 ## System Requirements
 
@@ -43,34 +38,46 @@ A real-time overlay for DCS World that displays aircraft weapons, fuel status.
 - DCS World (any version)
 - Modern web browser (Chrome, Firefox, Edge)
 
+## Compatibility
+
+The overlay is fully compatible with other DCS export mods:
+- ✅ DCS-SRS (SimpleRadio)
+- ✅ TacView
+- ✅ Other Export.lua scripts
+
+The installer appends to your existing Export.lua instead of replacing it.
+
 ## Usage
 
-- **Left Side**: Weapons loadout and fuel status    
+- **Left Panel**: Weapons loadout organized by type (A/A and A/G)
+- **Fuel Display**: Visual bar showing remaining fuel percentage and weight
+- **Aircraft Name**: Current aircraft displayed at top
 
 ## Troubleshooting
-
-### "Connecting to DCS..." stays on screen
-- Ensure DCS is running with an aircraft loaded
-- Check that `Export.lua` is in the correct folder: `C:\Users\[YourUsername]\Saved Games\DCS\Scripts\`
-- Verify the overlay server is running (console window should be open)
-
-### No weapons showing
-- Make sure aircraft has weapons loaded in mission editor
-- Check browser console (F12) for errors
 
 ### Windows Security Warning
 - Click "More info" → "Run anyway"
 - This is normal for unsigned executables
-- Optionally, add to Windows Defender exceptions
+- You can add to Windows Defender exceptions
 
-### Port Already in Use
-- Close any applications using ports 3000, 8080, or 12340
-- Or modify ports in `websocket-bridge.js` before building
+### "Connecting to DCS..." stays on screen
+- Ensure DCS is running with an aircraft loaded
+- Check that Export.lua was installed: `C:\Users\[YourUsername]\Saved Games\DCS\Scripts\Export.lua`
+- Look for "DCS-OVERLAY" text in Export.lua to verify installation
+
+### No weapons showing
+- Load weapons in mission editor
+- Verify aircraft has pylons/hardpoints loaded
+- Check browser console (F12) for errors
 
 ### Overlay not updating
-- Refresh the browser page (F5)
-- Restart `DCS-Overlay.exe`
-- Check DCS logs for export script errors
+- Refresh browser (F5)
+- Restart DCS Overlay application
+- Check DCS logs in `Saved Games\DCS\Logs\` for export errors
+
+### Port conflicts
+- Close applications using ports 3000, 8080, or 12340
+- Common conflicts: other overlays, web servers, development tools
 
 ## Development
 
@@ -78,69 +85,79 @@ A real-time overlay for DCS World that displays aircraft weapons, fuel status.
 
 - Node.js (v14 or higher)
 - npm
+- Inno Setup (for building installer)
 
 ### Setup
 
 ```bash
+git clone https://github.com/Dillen198/DCS-OVERLAYER.git
+cd DCS-OVERLAYER
 npm install
 ```
 
-### Run Development Server
+### Development Mode
 
 ```bash
 npm start
 ```
 
-Then open `http://localhost:3000` in your browser.
+Opens overlay at `http://localhost:3000`
 
-### Build EXE
+### Building
 
 ```bash
-npm install -g pkg
+# Build executable and assets
 npm run build
+
+# Create installer (requires Inno Setup)
+npm run package:win
 ```
 
-Output: `dist/DCS-Overlay.exe`
+Output:
+- `dist/DCS-Overlay.exe` - Standalone executable
+- `release/DCS-Overlay-Setup-v1.0.0.exe` - Windows installer
 
-## File Structure
+## Project Structure
 
 ```
 dcs-overlay/
-├── DCS-Overlay.exe         # Standalone executable (after build)
-├── Export.lua              # DCS export script
-├── websocket-bridge.js     # Node.js bridge server
-├── overlay.html            # Overlay UI
-├── package.json            # Node dependencies
+├── installer.js            # Main application with auto-installer
+├── build.js               # Build script
+├── package.js             # Installer packaging script
+├── Export.lua             # DCS export script
+├── overlay.html           # Web UI
+├── installer.iss          # Inno Setup configuration
+├── package.json           # Dependencies
 ├── mappings/
-│   ├── aircraft.json       # Aircraft icon mappings
-│   └── weapons.json        # Weapon icon mappings
+│   ├── aircraft.json      # Aircraft icon mappings
+│   └── weapons.json       # Weapon icon mappings
 └── images/
-    ├── aircraft/           # Aircraft icons
-    └── weapons/            # Weapon icons
+    ├── aircraft/          # Aircraft icons
+    └── weapons/           # Weapon icons
 ```
 
 ## Customization
 
-### Changing Update Rate
+### Update Rate
 
-In `Export.lua`, modify:
+In `Export.lua`:
 ```lua
-local UPDATE_INTERVAL = 0.1  -- Update every 0.1 seconds
+local UPDATE_INTERVAL = 0.1  -- seconds
 ```
 
-### Changing Overlay Position
+### Overlay Position
 
-In `overlay.html`, modify the CSS:
+In `overlay.html`:
 ```css
 .overlay-container {
-    left: 10px;    /* Distance from left */
-    bottom: 10px;  /* Distance from bottom */
+    left: 10px;
+    bottom: 10px;
 }
 ```
 
-### Changing Server Ports
+### Server Ports
 
-In `websocket-bridge.js`, modify:
+In `installer.js`:
 ```javascript
 const UDP_PORT = 12340;
 const WS_PORT = 8080;
@@ -149,22 +166,42 @@ const HTTP_PORT = 3000;
 
 ## Technical Details
 
-- **Export Script**: Runs inside DCS, exports data to JSON file
-- **Bridge Server**: Reads JSON file and serves data via WebSocket
-- **Overlay**: HTML/CSS/JavaScript UI that displays data in real-time
+**Architecture:**
+- Export Script: Runs in DCS, writes JSON to temp file
+- Bridge Server: Node.js app reads JSON, serves via WebSocket
+- Web UI: HTML/CSS/JS displays real-time data
+
+**Data Flow:**
+```
+DCS → Export.lua → JSON file → Bridge Server → WebSocket → Browser
+```
 
 ## Contributing
 
-Contributions welcome! Please open an issue or submit a pull request.
-
-## Credits
-
-Built for DCS World using official DCS API.
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
 ## License
 
-MIT
+MIT License - see LICENSE.txt
+
+## Credits
+
+Built for DCS World using the official DCS export API.
 
 ## Support
 
-For issues, questions, or feature requests, please open an issue on GitHub.
+- **Issues**: [GitHub Issues](https://github.com/Dillen198/DCS-OVERLAYER/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Dillen198/DCS-OVERLAYER/discussions)
+- **Discord**: [Join our Discord server](https://discord.gg/SuTqTaFR7T)
+
+## Changelog
+
+### v1.0.0 (2025-01-XX)
+- Initial release
+- Auto-installer with DCS detection
+- Real-time weapons and fuel display
+- Support for all DCS aircraft
+- Compatible with existing export mods
