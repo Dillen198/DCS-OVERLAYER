@@ -1,5 +1,31 @@
 {
+  "name": "dcs-overlay",
+  "version": "1.0.0",
+  "description": "DCS World Overlay",
+  "main": "installer.js",
+  "bin": "installer.js",
+  "scripts": {
+    "start": "node installer.js",
+    "build": "node build.js",
+    "package": "\"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe\" installer.iss",
+    "package:win": "powershell -Command \"& 'C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe' installer.iss\""
+  },
   "dependencies": {
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "overlay.html",
+      "mappings/**/*",
+      "images/**/*",
+      "Export.lua"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
   }
 }

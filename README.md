@@ -1,97 +1,112 @@
-# DCS Military Overlay with RWR Support
+# DCS World Overlay
 
-A real-time overlay for DCS World that displays aircraft weapons, fuel status, and RWR (Radar Warning Receiver) threats.
+A real-time overlay for DCS World that displays aircraft weapons, fuel status.
 
 ## Features
 
 - **Aircraft Information**: Shows current aircraft with icon
 - **Weapons Display**: Air-to-Air and Air-to-Ground weapons with counts
 - **Fuel Status**: Visual fuel bar with remaining fuel and estimated time
-- **RWR Display**: Real-time radar warning receiver showing threats on a circular scope
 
-## Prerequisites
+## Quick Start (For Users)
 
-- **DCS World** installed
-- **Node.js** (v14 or higher) - [Download here](https://nodejs.org/)
+### Download
 
-## Installation
+1. Go to [Releases](../../releases)
+2. Download the latest `DCS-Overlay-vX.X.X-Windows-x64.zip`
+3. Extract to any folder
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+### Installation
 
-2. **Install Export Script in DCS**
+1. **Install Export Script**
    
    Copy `Export.lua` to your DCS Scripts folder:
    ```
    C:\Users\[YourUsername]\Saved Games\DCS\Scripts\Export.lua
    ```
    
-   If `Export.lua` already exists, append the content instead of replacing.
+   **Important:** If `Export.lua` already exists, append the content instead of replacing.
 
-## Running the Overlay
+2. **Run the Overlay**
+   
+   Double-click `DCS-Overlay.exe`
+   
+   Your browser will automatically open to `http://localhost:3000`
 
-### Step 1: Start the Bridge Server
+3. **Launch DCS World**
+   
+   Start DCS and enter any mission. The overlay will automatically connect and display your aircraft data.
 
-Open a terminal in the project folder and run:
+## System Requirements
 
-```bash
-node websocket-bridge.js
-```
-
-You should see:
-```
-UDP server listening on 0.0.0.0:12340
-WebSocket server listening on port 8080
-HTTP server listening on http://localhost:3000
-Monitoring DCS data file: C:\Users\...\Saved Games\DCS\Temp\dcs_overlay_data.json
-```
-
-### Step 2: Open the Overlay
-
-Open your browser and go to:
-```
-http://localhost:3000
-```
-
-### Step 3: Launch DCS World
-
-1. Start DCS World
-2. Enter a mission or free flight
-3. The overlay will automatically connect and display your aircraft data
+- Windows 10/11 (64-bit)
+- DCS World (any version)
+- Modern web browser (Chrome, Firefox, Edge)
 
 ## Usage
 
-- **Left Side**: Weapons loadout and fuel status
-- **Top Right**: RWR display showing radar threats
-  - **Red**: Missile lock or launch
-  - **Orange**: Tracking radar
-  - **Yellow**: Search radar
+- **Left Side**: Weapons loadout and fuel status    
 
 ## Troubleshooting
 
-**"Connecting to DCS..." stays on screen**
+### "Connecting to DCS..." stays on screen
 - Ensure DCS is running with an aircraft loaded
-- Check that `Export.lua` is in the correct folder
-- Verify the bridge server is running
+- Check that `Export.lua` is in the correct folder: `C:\Users\[YourUsername]\Saved Games\DCS\Scripts\`
+- Verify the overlay server is running (console window should be open)
 
-**No weapons showing**
+### No weapons showing
 - Make sure aircraft has weapons loaded in mission editor
 - Check browser console (F12) for errors
 
-**RWR not showing threats**
-- Ensure enemy radar systems are in the mission
-- RWR only shows threats within detection range
+### Windows Security Warning
+- Click "More info" → "Run anyway"
+- This is normal for unsigned executables
+- Optionally, add to Windows Defender exceptions
 
-**Bridge server won't start**
-- Check if port 3000, 8080, or 12340 are already in use
-- Run `npm install` again to ensure dependencies are installed
+### Port Already in Use
+- Close any applications using ports 3000, 8080, or 12340
+- Or modify ports in `websocket-bridge.js` before building
+
+### Overlay not updating
+- Refresh the browser page (F5)
+- Restart `DCS-Overlay.exe`
+- Check DCS logs for export script errors
+
+## Development
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm
+
+### Setup
+
+```bash
+npm install
+```
+
+### Run Development Server
+
+```bash
+npm start
+```
+
+Then open `http://localhost:3000` in your browser.
+
+### Build EXE
+
+```bash
+npm install -g pkg
+npm run build
+```
+
+Output: `dist/DCS-Overlay.exe`
 
 ## File Structure
 
 ```
 dcs-overlay/
+├── DCS-Overlay.exe         # Standalone executable (after build)
 ├── Export.lua              # DCS export script
 ├── websocket-bridge.js     # Node.js bridge server
 ├── overlay.html            # Overlay UI
@@ -123,11 +138,24 @@ In `overlay.html`, modify the CSS:
 }
 ```
 
+### Changing Server Ports
+
+In `websocket-bridge.js`, modify:
+```javascript
+const UDP_PORT = 12340;
+const WS_PORT = 8080;
+const HTTP_PORT = 3000;
+```
+
 ## Technical Details
 
 - **Export Script**: Runs inside DCS, exports data to JSON file
 - **Bridge Server**: Reads JSON file and serves data via WebSocket
 - **Overlay**: HTML/CSS/JavaScript UI that displays data in real-time
+
+## Contributing
+
+Contributions welcome! Please open an issue or submit a pull request.
 
 ## Credits
 
@@ -136,3 +164,7 @@ Built for DCS World using official DCS API.
 ## License
 
 MIT
+
+## Support
+
+For issues, questions, or feature requests, please open an issue on GitHub.
