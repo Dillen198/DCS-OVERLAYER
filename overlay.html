@@ -37,6 +37,7 @@
             backdrop-filter: blur(10px);
         }
 
+        /* RWR Title */
         .rwr-title {
             color: #fbbf24;
             font-weight: 700;
@@ -750,12 +751,11 @@
             await loadAircraftMappings();
             connect();
             
-            // Update RWR display periodically
+            // Update RWR display continuously
             setInterval(() => {
-                if (aircraftInfo.style.display !== 'none') {
-                    updateRWR({});
-                }
-            }, 1000);
+                // Always update RWR to show test threats
+                updateRWR({});
+            }, 500); // Update every 500ms for smoother threat display
         }
 
         // Start the application
