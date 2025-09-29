@@ -199,7 +199,7 @@ Built for DCS World using the official DCS export API.
 
 ## Changelog
 
-### v1.0.0 (2025-01-XX)
+### v1.0.0 (2025-09-29)
 - Initial release
 - Auto-installer with DCS detection
 - Real-time weapons and fuel display
