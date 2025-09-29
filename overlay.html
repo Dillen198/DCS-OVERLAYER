@@ -14,7 +14,6 @@
             font-size: 8px;
         }
 
-        /* Left Side Overlay Container */
         .overlay-container {
             position: fixed;
             left: 10px;
@@ -23,17 +22,6 @@
             width: 200px;
         }
 
-        @keyframes threatPulse {
-            0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
-        @keyframes missileBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Aircraft Section */
         .aircraft-section {
             text-align: center;
             margin-bottom: 24px;
@@ -79,7 +67,6 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
         }
 
-        /* Weapons Sections */
         .weapons-section {
             margin-bottom: 20px;
         }
@@ -140,7 +127,6 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Fuel Section */
         .fuel-section {
             padding-top: 20px;
         }
@@ -196,7 +182,6 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Status */
         .status {
             text-align: center;
             color: #ef4444;
@@ -215,7 +200,6 @@
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
         }
 
-        /* Empty state */
         .empty-weapons {
             text-align: center;
             color: #9ca3af;
@@ -228,12 +212,10 @@
     </style>
 </head>
 <body>
-    <!-- Left Side: Weapons and Fuel -->
     <div class="overlay-container">
         <div class="status" id="status">Connecting to DCS...</div>
         
         <div id="aircraft-info" style="display: none;">
-            <!-- Aircraft Section -->
             <div class="aircraft-section">
                 <div class="aircraft-icon" id="aircraft-icon">
                     <div class="aircraft-icon-placeholder">AIRCRAFT</div>
@@ -241,7 +223,6 @@
                 <div class="aircraft-name" id="aircraft-name">Unknown Aircraft</div>
             </div>
 
-            <!-- Air-to-Air Weapons -->
             <div class="weapons-section">
                 <div class="weapons-title aa-title">Air-to-Air</div>
                 <div id="aa-weapons-list" class="weapons-list">
@@ -249,7 +230,6 @@
                 </div>
             </div>
 
-            <!-- Air-to-Ground Weapons -->
             <div class="weapons-section">
                 <div class="weapons-title ag-title">Air-to-Ground</div>
                 <div id="ag-weapons-list" class="weapons-list">
@@ -257,7 +237,6 @@
                 </div>
             </div>
 
-            <!-- Fuel Section -->
             <div class="fuel-section">
                 <div class="fuel-title">Fuel Status</div>
                 <div class="fuel-bar-container">
@@ -275,9 +254,9 @@
     <script>
         let websocket;
         let reconnectInterval = 2000;
-        let maxReconnectAttempts = -1;
         let reconnectAttempts = 0;
         let aircraftMappings = {};
+        let lastDataTime = 0;
 
         const statusElement = document.getElementById('status');
         const aircraftInfo = document.getElementById('aircraft-info');
@@ -289,28 +268,30 @@
         const aaWeaponsList = document.getElementById('aa-weapons-list');
         const agWeaponsList = document.getElementById('ag-weapons-list');
 
-        // Load aircraft mappings on page load
+        // Debounce function for performance
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         async function loadAircraftMappings() {
             try {
                 const response = await fetch('mappings/aircraft.json');
                 if (response.ok) {
                     aircraftMappings = await response.json();
-                    console.log('Aircraft mappings loaded:', aircraftMappings);
                 } else {
-                    console.warn('Could not load aircraft mappings, using fallback');
-                    aircraftMappings = {
-                        "F/A-18C_hornet": "f18c_hornet.png",
-                        "F-16C_50": "f16c_viper.png",
-                        "A-10C": "a10c_warthog.png",
-                        "A-10C_2": "a10c_ii_warthog.png",
-                        "default": "default_aircraft.png"
-                    };
+                    aircraftMappings = { "default": "default_aircraft.png" };
                 }
             } catch (error) {
                 console.error('Error loading aircraft mappings:', error);
-                aircraftMappings = {
-                    "default": "default_aircraft.png"
-                };
+                aircraftMappings = { "default": "default_aircraft.png" };
             }
         }
 
@@ -326,6 +307,7 @@
                 websocket.onmessage = function(event) {
                     try {
                         const data = JSON.parse(event.data);
+                        lastDataTime = Date.now();
                         updateDisplay(data);
                     } catch (e) {
                         console.error('Failed to parse data:', e);
@@ -334,13 +316,11 @@
 
                 websocket.onclose = function() {
                     statusElement.textContent = 'Connection lost. Reconnecting...';
+                    statusElement.style.display = 'block';
                     statusElement.classList.remove('connected');
                     aircraftInfo.style.display = 'none';
-                    
-                    if (maxReconnectAttempts === -1 || reconnectAttempts < maxReconnectAttempts) {
-                        setTimeout(connect, reconnectInterval);
-                        reconnectAttempts++;
-                    }
+                    setTimeout(connect, reconnectInterval);
+                    reconnectAttempts++;
                 };
 
                 websocket.onerror = function(error) {
@@ -353,13 +333,12 @@
             }
         }
 
-        function updateDisplay(data) {
+        const debouncedUpdate = debounce(function(data) {
             if (!data.aircraft || data.aircraft === "NO_AIRCRAFT") return;
 
             aircraftInfo.style.display = 'block';
             aircraftName.textContent = data.aircraft;
 
-            // Update aircraft icon
             updateAircraftIcon(data.aircraft);
 
             // Update fuel
@@ -384,6 +363,10 @@
             
             const agWeapons = aggregateWeapons(data.weapons.air_to_ground || []);
             updateWeaponsList(agWeapons, agWeaponsList, "No A/G weapons loaded");
+        }, 100);
+
+        function updateDisplay(data) {
+            debouncedUpdate(data);
         }
 
         function updateAircraftIcon(aircraftName) {
@@ -414,12 +397,10 @@
                     if (weaponMap.has(key)) {
                         const existing = weaponMap.get(key);
                         existing.total += weapon.count;
-                        existing.remaining += weapon.count;
                     } else {
                         weaponMap.set(key, {
                             name: weapon.name,
-                            total: weapon.count,
-                            remaining: weapon.count
+                            total: weapon.count
                         });
                     }
                 }
@@ -476,13 +457,21 @@
             return hours > 0 ? `${hours}:${mins.toString().padStart(2, '0')}` : `${mins}:00`;
         }
 
-        // Initialize the application
+        // Connection health check
+        setInterval(() => {
+            if (lastDataTime > 0 && Date.now() - lastDataTime > 5000) {
+                statusElement.textContent = 'No data from DCS';
+                statusElement.style.display = 'block';
+                statusElement.classList.remove('connected');
+                aircraftInfo.style.display = 'none';
+            }
+        }, 1000);
+
         async function initialize() {
             await loadAircraftMappings();
             connect();
         }
 
-        // Start the application
         initialize();
     </script>
 </body>
