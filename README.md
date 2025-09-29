@@ -238,10 +238,13 @@ Built for the DCS World streaming and content creation community using the offic
 - **Feature Requests**: [GitHub Discussions](https://github.com/Dillen198/DCS-OVERLAYER/discussions)
 - **Community Discord**: [Join Server](https://discord.gg/SuTqTaFR7T)
 - **Streaming Tips**: Check Discord #streaming-setup channel
+- **Support Development**: [Patreon](https://www.patreon.com/killerdog198)
+
+If you find this overlay useful for your streams, consider supporting development on Patreon. Your support helps maintain and improve the overlay with new features!
 
 ## Changelog
 
-### v1.0.0 (September 2025)
+### v1.0.0 (January 2025)
 - Initial public release
 - Automatic installer with DCS detection
 - Real-time weapons and fuel monitoring
