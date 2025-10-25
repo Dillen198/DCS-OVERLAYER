@@ -1,16 +1,12 @@
 -- DCS World Export Script for Overlay
-
 local lfs = require('lfs')
-
 -- Configuration for DCS Overlay  
 local UPDATE_INTERVAL = 0.1 -- seconds
 local nextUpdateTime = 0
 local dataFile = nil
 local debugCounter = 0
-
 function LuaExportStart()
     log.write('DCS-OVERLAY', log.INFO, 'LuaExportStart() called')
-    
     -- Initialize data file for overlay
     pcall(function()
         lfs.mkdir(lfs.writedir().."Temp")
@@ -22,32 +18,24 @@ function LuaExportStart()
         end
     end)
 end
-
 function LuaExportBeforeNextFrame()
     -- Empty
 end
-
 function LuaExportAfterNextFrame()
     debugCounter = debugCounter + 1
-    
     if debugCounter % 100 == 0 then
         log.write('DCS-OVERLAY', log.INFO, 'LuaExportAfterNextFrame() running (call #' .. debugCounter .. ')')
     end
-    
     local success, error_msg = pcall(function()
         local now = LoGetModelTime()
-        
         if dataFile and now and nextUpdateTime and now > nextUpdateTime then
             nextUpdateTime = now + UPDATE_INTERVAL
-            
             -- Get aircraft data using correct DCS API
             local selfData = LoGetSelfData()
             if selfData then
                 log.write('DCS-OVERLAY', log.INFO, 'Aircraft found: ' .. tostring(selfData.Name))
-                
                 -- Get payload info
                 local payloadInfo = LoGetPayloadInfo()
-                
                 -- Get fuel data from engine info
                 local engineInfo = LoGetEngineInfo()
                 local fuelData = {
@@ -55,14 +43,12 @@ function LuaExportAfterNextFrame()
                     external = 0,
                     total = 0
                 }
-                
                 if engineInfo then
                     fuelData.internal = engineInfo.fuel_internal or 0
                     fuelData.external = engineInfo.fuel_external or 0
                     fuelData.total = (engineInfo.fuel_internal or 0) + (engineInfo.fuel_external or 0)
                     log.write('DCS-OVERLAY', log.INFO, 'Fuel: ' .. fuelData.total)
                 end
-                
                 -- Create data packet
                 local data = {
                     timestamp = now,
@@ -74,17 +60,14 @@ function LuaExportAfterNextFrame()
                         other = {}
                     }
                 }
-                
                 -- Extract weapons data
                 local weaponCount = 0
                 if payloadInfo and payloadInfo.Stations then
                     for stationId, station in pairs(payloadInfo.Stations) do
                         if station.weapon and station.count and station.count > 0 then
                             weaponCount = weaponCount + 1
-                            
                             -- Get weapon name
                             local weaponName = LoGetNameByType(station.weapon.level1, station.weapon.level2, station.weapon.level3, station.weapon.level4)
-                            
                             -- Skip if weapon name is invalid or unknown
                             if not weaponName or weaponName == "" or string.find(weaponName, "UNKNOWN") then
                                 -- Skip this weapon
@@ -92,7 +75,6 @@ function LuaExportAfterNextFrame()
                                 -- Categorize weapons
                                 local isAirToAir = false
                                 local isAirToGround = false
-                                
                                 -- Air-to-Air patterns
                                 if string.find(string.upper(weaponName), "AIM%-120") or 
                                    string.find(string.upper(weaponName), "AIM%-9") or
@@ -111,14 +93,12 @@ function LuaExportAfterNextFrame()
                                        string.find(string.upper(weaponName), "CBU%-") then
                                     isAirToGround = true
                                 end
-                                
                                 local weapon = {
                                     station = stationId,
                                     name = weaponName,
                                     count = station.count or 1,
                                     category = station.weapon.level1 or 0
                                 }
-                                
                                 if isAirToAir then
                                     table.insert(data.weapons.air_to_air, weapon)
                                 elseif isAirToGround then
@@ -130,7 +110,6 @@ function LuaExportAfterNextFrame()
                         end
                     end
                 end
-                
                 -- Add cannon info
                 if payloadInfo and payloadInfo.Cannon then
                     table.insert(data.weapons.air_to_air, {
@@ -140,13 +119,10 @@ function LuaExportAfterNextFrame()
                         category = "Gun"
                     })
                 end
-                
                 -- Write JSON data
                 local json = encodeJSON(data)
-                
                 dataFile:close()
                 dataFile = io.open(lfs.writedir().."Temp/dcs_overlay_data.json", "w")
-                
                 if dataFile then
                     dataFile:write(json)
                     dataFile:flush()
@@ -155,16 +131,13 @@ function LuaExportAfterNextFrame()
             end
         end
     end)
-    
     if not success then
         log.write('DCS-OVERLAY', log.ERROR, 'Error: ' .. tostring(error_msg))
     end
 end
-
 function LuaExportActivityNextEvent(t)
     return t + 0.01
 end
-
 function LuaExportStop()
     log.write('DCS-OVERLAY', log.INFO, 'LuaExportStop() called')
     pcall(function()
@@ -173,14 +146,12 @@ function LuaExportStop()
         end
     end)
 end
-
 -- JSON encoder
 function encodeJSON(obj)
     if type(obj) == "table" then
         local items = {}
         local isArray = true
         local count = 0
-        
         for k, v in pairs(obj) do
             count = count + 1
             if type(k) ~= "number" or k ~= count then
@@ -188,7 +159,6 @@ function encodeJSON(obj)
                 break
             end
         end
-        
         if isArray then
             for i, v in ipairs(obj) do
                 table.insert(items, encodeJSON(v))
@@ -210,5 +180,4 @@ function encodeJSON(obj)
         return "null"
     end
 end
-
 log.write('DCS-OVERLAY', log.INFO, 'Export.lua loaded')
